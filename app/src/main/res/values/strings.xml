@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">SensorTest_LP</string>
+    <!--PSensorTestActivity-->
+    <string name="proximity_str">传感器值：%.1f</string>
+    <string name="btn_start_label">开始测试</string>
+    <string name="btn_stop_label">结束测试</string>
+    <string name="p_table_raw1">次数</string>
+    <string name="p_table_raw2">灭屏时间(ms)</string>
+    <string name="p_table_raw3">亮屏时间(ms)</string>
+</resources>
