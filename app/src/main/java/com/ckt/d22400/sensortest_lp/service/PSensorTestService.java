@@ -12,11 +12,20 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.ckt.d22400.sensortest_lp.LcdBrightnessGetter;
 import com.ckt.d22400.sensortest_lp.R;
 import com.ckt.d22400.sensortest_lp.ui.PSensorTestActivity;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class PSensorTestService extends Service {
 
+    private final String TAG = PSensorTestActivity.TAG;
+
+    private boolean mIsScreenOff = false;
+
+    private ExecutorService mThreadPool;
     private NotificationManager mNotificationManager;
     private SensorManager mSensorManager;
     private Sensor mProximity;
@@ -40,6 +49,7 @@ public class PSensorTestService extends Service {
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mThreadPool = Executors.newCachedThreadPool();
     }
 
     /**
@@ -63,7 +73,29 @@ public class PSensorTestService extends Service {
         //PSensor事件监听器
         @Override
         public void onSensorChanged(SensorEvent event) {
-            Log.i(PSensorTestActivity.TAG, "PSensor感应值: "+event.values[0]);
+            float sensorValue = event.values[0];
+            Log.i(PSensorTestActivity.TAG, "PSensor感应值: " + sensorValue);
+            //
+            if (sensorValue < 1.0 && !mIsScreenOff) {
+                final long startTime = System.currentTimeMillis();
+                mThreadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (0 == LcdBrightnessGetter.getLcdBrightness()) {
+                                long endTime = System.currentTimeMillis();
+                                Log.i(TAG, "startTime: " + startTime + " endTime: " + endTime);
+                                Log.i(TAG, "灭屏时间: " + (endTime - startTime));
+//                                mIsScreenOff = true;
+                            } else {
+                                Log.i(TAG, "0 != LcdBrightnessGetter.getLcdBrightness()");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
         }
 
         @Override
