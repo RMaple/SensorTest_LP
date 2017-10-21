@@ -10,6 +10,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.IBinder;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.ckt.d22400.sensortest_lp.LcdBrightnessGetter;
@@ -19,16 +20,24 @@ import com.ckt.d22400.sensortest_lp.ui.PSensorTestActivity;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * 进行P-Sensor测试的后台服务。
+ * 因为要在拨号时进行测试，所以需要在服务中进行操作。
+ * <p>
+ * 在PSensorActivity中点击“开始测试”按钮后即会绑定服务，点击“停止服务”后会解绑。
+ */
 public class PSensorTestService extends Service {
 
     private final String TAG = PSensorTestActivity.TAG;
-
+    //判断屏幕是否熄灭的布尔值
     private boolean mIsScreenOff = false;
 
+    //线程池
     private ExecutorService mThreadPool;
     private NotificationManager mNotificationManager;
     private SensorManager mSensorManager;
     private Sensor mProximity;
+    private TelephonyManager mTelephonyManager;
 
     @Override
     public void onCreate() {
@@ -46,9 +55,11 @@ public class PSensorTestService extends Service {
     }
 
     private void initVariable() {
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mTelephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        //
+        mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         mThreadPool = Executors.newCachedThreadPool();
     }
 
@@ -75,20 +86,47 @@ public class PSensorTestService extends Service {
         public void onSensorChanged(SensorEvent event) {
             float sensorValue = event.values[0];
             Log.i(PSensorTestActivity.TAG, "PSensor感应值: " + sensorValue);
-            //
-            if (sensorValue < 1.0 && !mIsScreenOff) {
+            Log.i(TAG, "是否在正在通话中？  " + isTelCalling());
+            //通话中且屏幕未灭时才可测试灭屏时间，P-Sensor状态为接近时算作开始
+            if (isTelCalling() && !mIsScreenOff && sensorValue <= 1.0) {
+                //灭屏开始时间
                 final long startTime = System.currentTimeMillis();
                 mThreadPool.execute(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            if (0 == LcdBrightnessGetter.getLcdBrightness()) {
-                                long endTime = System.currentTimeMillis();
-                                Log.i(TAG, "startTime: " + startTime + " endTime: " + endTime);
-                                Log.i(TAG, "灭屏时间: " + (endTime - startTime));
-//                                mIsScreenOff = true;
-                            } else {
-                                Log.i(TAG, "0 != LcdBrightnessGetter.getLcdBrightness()");
+                            int brightness;
+                            while (true) {
+                                brightness = LcdBrightnessGetter.getLcdBrightness();
+                                Log.i(TAG, "LCD亮度值(D): " + brightness);
+                                if (brightness == 0) {
+                                    long endTime = System.currentTimeMillis();
+                                    mIsScreenOff = true;
+                                    Log.i(TAG, "灭屏时间: " + (endTime - startTime));
+                                    break;
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            } else if (isTelCalling() && mIsScreenOff && sensorValue > 1.0) {
+                final long startTime = System.currentTimeMillis();
+                mThreadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            int brightness;
+                            while (true) {
+                                brightness = LcdBrightnessGetter.getLcdBrightness();
+                                Log.i(TAG, "LCD亮度值(L): " + brightness);
+                                if (brightness > 0) {
+                                    long endTime = System.currentTimeMillis();
+                                    mIsScreenOff = false;
+                                    Log.i(TAG, "亮屏时间: " + (endTime - startTime));
+                                    break;
+                                }
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -103,6 +141,20 @@ public class PSensorTestService extends Service {
 
         }
     };
+
+    /**
+     * 判断是否正在通话中的方法
+     *
+     * @return 是否正在通话中的布尔值
+     */
+    public boolean isTelCalling() {
+        boolean isCalling = false;
+        if (TelephonyManager.CALL_STATE_OFFHOOK == mTelephonyManager.getCallState()
+                || TelephonyManager.CALL_STATE_RINGING == mTelephonyManager.getCallState()) {
+            isCalling = true;
+        }
+        return isCalling;
+    }
 
     @Override
     public boolean onUnbind(Intent intent) {

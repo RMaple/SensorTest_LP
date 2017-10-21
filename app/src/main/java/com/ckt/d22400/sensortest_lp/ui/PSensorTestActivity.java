@@ -24,6 +24,8 @@ public class PSensorTestActivity extends AppCompatActivity {
     public static final String TAG = "PST.";
     //表示是否正在测试的布尔值
     private boolean isTesting = false;
+    //表示服务是否异常终止的布尔值
+    private boolean mIsServiceCrashed = false;
 
     @BindView(R.id.toolBar)
     Toolbar mToolBar;
@@ -47,7 +49,7 @@ public class PSensorTestActivity extends AppCompatActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
+            mIsServiceCrashed = true;
         }
     };
 
@@ -56,7 +58,12 @@ public class PSensorTestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_psensor_test);
         ButterKnife.bind(this);
+        initView();
         initData();
+    }
+
+    private void initView() {
+        mStopButton.setEnabled(false);
     }
 
     private void initData() {
@@ -73,6 +80,8 @@ public class PSensorTestActivity extends AppCompatActivity {
     public void onButtonClicked(Button button) {
         switch (button.getId()) {
             case R.id.btn_start:
+                mStartButton.setEnabled(false);
+                mStopButton.setEnabled(true);
                 isTesting = true;
                 Intent service = new Intent(this, PSensorTestService.class);
                 bindService(service, mConnection, BIND_AUTO_CREATE);
@@ -81,7 +90,11 @@ public class PSensorTestActivity extends AppCompatActivity {
                 startActivity(toDial);
                 break;
             case R.id.btn_stop:
-                unbindService(mConnection);
+                mStartButton.setEnabled(true);
+                mStopButton.setEnabled(false);
+                if (!mIsServiceCrashed) {
+                    unbindService(mConnection);
+                }
                 break;
         }
     }
