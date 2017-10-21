@@ -34,6 +34,7 @@
         android:layout_below="@id/btn_start"
         android:text="@string/btn_stop_label"/>
 
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_records"
         android:layout_width="match_parent"
@@ -80,6 +81,7 @@
     </LinearLayout>
 
     <View
+        android:id="@+id/line"
         android:layout_width="match_parent"
         android:layout_height="0.1dp"
         android:layout_above="@id/records_header"
@@ -90,4 +92,28 @@
         android:layout_height="0.1dp"
         android:layout_above="@id/rv_records"
         android:background="@android:color/black"/>
+
+    <TextView
+        android:id="@+id/tv_average"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/line"/>
+
+    <Button
+        android:id="@+id/btn_get_records"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tv_average"
+        android:layout_marginBottom="10dp"
+        android:text="@string/btn_get_records_label"/>
+
+    <Button
+        android:id="@+id/btn_clear"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tv_average"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="10dp"
+        android:text="@string/btn_clear_label"/>
+
 </RelativeLayout>

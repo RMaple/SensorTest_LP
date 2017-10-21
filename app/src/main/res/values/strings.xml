@@ -7,4 +7,6 @@
     <string name="p_table_raw1">次数</string>
     <string name="p_table_raw2">灭屏时间(ms)</string>
     <string name="p_table_raw3">亮屏时间(ms)</string>
+    <string name="btn_get_records_label">获取记录</string>
+    <string name="btn_clear_label">清除记录</string>
 </resources>

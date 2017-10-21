@@ -11,9 +11,13 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ckt.d22400.sensortest_lp.R;
+import com.ckt.d22400.sensortest_lp.model.PSensorTestRecords;
 import com.ckt.d22400.sensortest_lp.service.PSensorTestService;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,6 +39,10 @@ public class PSensorTestActivity extends AppCompatActivity {
     Button mStartButton;
     @BindView(R.id.btn_stop)
     Button mStopButton;
+    @BindView(R.id.btn_get_records)
+    Button mGetRecordsButton;
+    @BindView(R.id.btn_clear)
+    Button mClearButton;
     @BindView(R.id.rv_records)
     RecyclerView mRecyclerView;
 
@@ -52,6 +60,7 @@ public class PSensorTestActivity extends AppCompatActivity {
             mIsServiceCrashed = true;
         }
     };
+    private List<PSensorTestRecords> mRecords;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +85,7 @@ public class PSensorTestActivity extends AppCompatActivity {
     }
 
 
-    @OnClick({R.id.btn_start, R.id.btn_stop})
+    @OnClick({R.id.btn_start, R.id.btn_stop, R.id.btn_get_records, R.id.btn_clear})
     public void onButtonClicked(Button button) {
         switch (button.getId()) {
             case R.id.btn_start:
@@ -95,6 +104,16 @@ public class PSensorTestActivity extends AppCompatActivity {
                 if (!mIsServiceCrashed) {
                     unbindService(mConnection);
                 }
+                break;
+            case R.id.btn_get_records:
+                if (!mIsServiceCrashed) {
+                    mRecords = mService.getRecords();
+                    mService.setIsRecordsUpdate(false);//更新数据完毕
+                }else {
+                    Toast.makeText(this, "记录未更新或无记录", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case R.id.btn_clear:
                 break;
         }
     }

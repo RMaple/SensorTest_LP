@@ -15,8 +15,11 @@ import android.util.Log;
 
 import com.ckt.d22400.sensortest_lp.LcdBrightnessGetter;
 import com.ckt.d22400.sensortest_lp.R;
+import com.ckt.d22400.sensortest_lp.model.PSensorTestRecords;
 import com.ckt.d22400.sensortest_lp.ui.PSensorTestActivity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -31,7 +34,10 @@ public class PSensorTestService extends Service {
     private final String TAG = PSensorTestActivity.TAG;
     //判断屏幕是否熄灭的布尔值
     private boolean mIsScreenOff = false;
+    //判断记录是否更新（存在）的布尔值
+    private boolean mIsRecordsUpdate = false;
 
+    private List<PSensorTestRecords> mRecords;
     //线程池
     private ExecutorService mThreadPool;
     private NotificationManager mNotificationManager;
@@ -60,7 +66,8 @@ public class PSensorTestService extends Service {
         mTelephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         //
         mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        mThreadPool = Executors.newCachedThreadPool();
+        mThreadPool = Executors.newSingleThreadExecutor();
+        mRecords = new ArrayList<>();
     }
 
     /**
@@ -103,6 +110,8 @@ public class PSensorTestService extends Service {
                                     long endTime = System.currentTimeMillis();
                                     mIsScreenOff = true;
                                     Log.i(TAG, "灭屏时间: " + (endTime - startTime));
+                                    mRecords.add(new PSensorTestRecords((int) (endTime - startTime)));
+                                    mIsRecordsUpdate = true;
                                     break;
                                 }
                             }
@@ -125,6 +134,7 @@ public class PSensorTestService extends Service {
                                     long endTime = System.currentTimeMillis();
                                     mIsScreenOff = false;
                                     Log.i(TAG, "亮屏时间: " + (endTime - startTime));
+                                    mRecords.get(mRecords.size() - 1).setScreenOnTime((int) (endTime - startTime));
                                     break;
                                 }
                             }
@@ -142,6 +152,13 @@ public class PSensorTestService extends Service {
         }
     };
 
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        mSensorManager.unregisterListener(mPSensorListener, mProximity);
+        return super.onUnbind(intent);
+    }
+
     /**
      * 判断是否正在通话中的方法
      *
@@ -156,14 +173,17 @@ public class PSensorTestService extends Service {
         return isCalling;
     }
 
-    @Override
-    public boolean onUnbind(Intent intent) {
-        mSensorManager.unregisterListener(mPSensorListener, mProximity);
-        return super.onUnbind(intent);
-    }
-
-
     public class PSTestBinder extends Binder {
+        public List<PSensorTestRecords> getRecords() {
+            return mRecords;
+        }
 
+        public boolean getIsRecordsUpdate() {
+            return mIsRecordsUpdate;
+        }
+
+        public void setIsRecordsUpdate(boolean isRecordsUpdate){
+            mIsRecordsUpdate = isRecordsUpdate;
+        }
     }
 }
