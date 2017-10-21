@@ -1,4 +1,4 @@
-package com.ckt.d22400.sensortest_lp;
+package com.ckt.d22400.sensortest_lp.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.Button;
 
+import com.ckt.d22400.sensortest_lp.R;
 import com.ckt.d22400.sensortest_lp.ui.LSensorTestActivity;
 import com.ckt.d22400.sensortest_lp.ui.PSensorTestActivity;
 

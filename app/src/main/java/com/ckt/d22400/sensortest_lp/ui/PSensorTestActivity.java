@@ -3,6 +3,7 @@ package com.ckt.d22400.sensortest_lp.ui;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
@@ -75,6 +76,9 @@ public class PSensorTestActivity extends AppCompatActivity {
                 isTesting = true;
                 Intent service = new Intent(this, PSensorTestService.class);
                 bindService(service, mConnection, BIND_AUTO_CREATE);
+                //开始测试后自动跳转到拨号
+                Intent toDial = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:112"));
+                startActivity(toDial);
                 break;
             case R.id.btn_stop:
                 unbindService(mConnection);
