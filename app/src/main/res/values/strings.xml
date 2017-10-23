@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">SensorTest_LP</string>
+    <!--MainActivity-->
+    <string name="btn_pst_label">P-Sensor测试</string>
+    <string name="btn_lts_label">L-Sensor测试</string>
     <!--PSensorTestActivity-->
     <string name="proximity_str">传感器值：%.1f</string>
     <string name="btn_start_label">开始测试</string>
@@ -11,4 +14,7 @@
     <string name="btn_clear_label">清除记录</string>
     <string name="average_time">平均灭屏时间：\n%1$.2fms\n平均亮屏时间：\n%2$.2fms</string>
     <string name="save_excel_label">导出EXCEL</string>
+    <!--LSensorTestActivity-->
+    <string name="show_lux">光照强度：%.1f lx</string>
+    <string name="brightness">当前亮度：%d</string>
 </resources>

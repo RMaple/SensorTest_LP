@@ -27,8 +27,7 @@ import butterknife.OnClick;
 public class PSensorTestActivity extends AppCompatActivity {
 
     public static final String TAG = "PST.";
-    //表示是否正在测试的布尔值
-    private boolean isTesting = false;
+
     //表示服务是否异常终止的布尔值
     private boolean mIsServiceCrashed = false;
 
