@@ -9,21 +9,11 @@
     <include layout="@layout/activity_base"/>
 
 
-    <TextView
-        android:id="@+id/tv_proximity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/toolBar"
-        android:layout_marginStart="6dp"
-        android:layout_marginTop="6dp"
-        android:text="@string/proximity_str"
-        android:textSize="18sp"/>
-
     <Button
         android:id="@+id/btn_start"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tv_proximity"
+        android:layout_below="@id/toolBar"
         android:layout_marginTop="10dp"
         android:text="@string/btn_start_label"/>
 
@@ -33,6 +23,17 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/btn_start"
         android:text="@string/btn_stop_label"/>
+
+    <TextView
+        android:id="@+id/tv_average"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@id/btn_start"
+        android:gravity="center"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="20sp"
+        tools:text="平均灭屏时间：\n2ms\n平均亮屏时间：\n500ms"/>
 
 
     <android.support.v7.widget.RecyclerView
@@ -93,17 +94,12 @@
         android:layout_above="@id/rv_records"
         android:background="@android:color/black"/>
 
-    <TextView
-        android:id="@+id/tv_average"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/line"/>
 
     <Button
         android:id="@+id/btn_get_records"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_above="@id/tv_average"
+        android:layout_above="@id/line"
         android:layout_marginBottom="10dp"
         android:text="@string/btn_get_records_label"/>
 
@@ -111,7 +107,7 @@
         android:id="@+id/btn_clear"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_above="@id/tv_average"
+        android:layout_above="@id/line"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="10dp"
         android:text="@string/btn_clear_label"/>

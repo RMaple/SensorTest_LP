@@ -178,11 +178,31 @@ public class PSensorTestService extends Service {
             return mRecords;
         }
 
+        public void clearRecords() {
+            mRecords.clear();
+        }
+
+        public float getAverageOffTime() {
+            float sum = 0;
+            for (PSensorTestRecords ptr : mRecords) {
+                sum = sum + ptr.getScreenOffTime();
+            }
+            return sum / (mRecords.size());
+        }
+
+        public float getAverageOnTime() {
+            float sum = 0;
+            for (PSensorTestRecords ptr : mRecords) {
+                sum = sum + ptr.getScreenOnTime();
+            }
+            return sum / (mRecords.size());
+        }
+
         public boolean getIsRecordsUpdate() {
             return mIsRecordsUpdate;
         }
 
-        public void setIsRecordsUpdate(boolean isRecordsUpdate){
+        public void setIsRecordsUpdate(boolean isRecordsUpdate) {
             mIsRecordsUpdate = isRecordsUpdate;
         }
     }

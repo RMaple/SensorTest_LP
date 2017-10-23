@@ -9,4 +9,6 @@
     <string name="p_table_raw3">亮屏时间(ms)</string>
     <string name="btn_get_records_label">获取记录</string>
     <string name="btn_clear_label">清除记录</string>
+    <string name="average_time">平均灭屏时间：\n%1$.2fms\n平均亮屏时间：\n%2$.2fms</string>
+    <string name="save_excel_label">导出EXCEL</string>
 </resources>
