@@ -21,6 +21,7 @@
 
     <TextView
         android:id="@+id/tv_brightness"
+        android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/tv_lux"
@@ -37,11 +38,19 @@
         android:layout_marginTop="10dp"
         android:text="由亮变暗的测试"/>
 
+    <Button
+        android:id="@+id/btn_stop"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_start"
+        android:layout_marginTop="6dp"
+        android:text="@string/btn_stop_label"/>
+
     <LinearLayout
         android:id="@+id/records_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btn_start"
+        android:layout_below="@id/btn_stop"
         android:orientation="horizontal">
 
         <TextView
