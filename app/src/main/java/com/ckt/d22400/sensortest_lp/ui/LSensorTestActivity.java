@@ -7,6 +7,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -19,6 +20,10 @@ import android.widget.Toast;
 
 import com.ckt.d22400.sensortest_lp.LcdBrightnessGetter;
 import com.ckt.d22400.sensortest_lp.R;
+import com.ckt.d22400.sensortest_lp.model.LSensorTestRecords;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,8 +33,17 @@ public class LSensorTestActivity extends AppCompatActivity {
 
     public static final String TAG = "LST.";
     //表示是否正在监听LCD亮度值的布尔值
-    private boolean isListening = false;
+    private boolean mIsStart = false;
+    //表示是否遮盖L-Sensor的布尔值
+    private boolean mIsCoverLSensor = false;
+    private int mLcdBrightness = -1;
+    private long mStartTime;
+    private long mTempTime;//用来计算暗亮时间的缓存时间
+    private float mLux;
 
+    private List<LSensorTestRecords> mRecords;
+    private SensorManager mSensorManager;
+    private Sensor mLight;//光照传感器
 
     @BindView(R.id.toolBar)
     Toolbar mToolBar;
@@ -43,21 +57,25 @@ public class LSensorTestActivity extends AppCompatActivity {
     Button mStopButton;
     @BindView(R.id.rv_records)
     RecyclerView mRecyclerView;
-    private SensorManager mSensorManager;
-    private Sensor mLight;//光照传感器
-    private int mLcdBrightness = -1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lsensor_test);
         ButterKnife.bind(this);
-        setSupportActionBar(mToolBar);
-        mToolBar.setTitle("L-Sensor测试");
+        initView();
         initVariable();
     }
 
+    private void initView() {
+        setSupportActionBar(mToolBar);
+        mToolBar.setTitle("L-Sensor测试");
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+    }
+
     private void initVariable() {
+        mRecords = new ArrayList<>();
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
     }
@@ -92,7 +110,13 @@ public class LSensorTestActivity extends AppCompatActivity {
     private SensorEventListener mSensorEventListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            mLuxTextView.setText(getString(R.string.show_lux, event.values[0]));
+            mLux = event.values[0];
+            mLuxTextView.setText(getString(R.string.show_lux, mLux));
+            if (mIsStart && mLux == 0.0f) {
+                mIsCoverLSensor = true;
+                mRecords.add(new LSensorTestRecords(
+                        mRecords.size() + 1, "暗", (int) mLux, mLcdBrightness + "", System.currentTimeMillis()));
+            }
         }
 
         @Override
@@ -129,19 +153,37 @@ public class LSensorTestActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                int temp = -1;
-                while (isListening) {
-                    Log.i(TAG, "run: ");
+                int temp;
+                while (mIsStart) {
                     try {
                         temp = LcdBrightnessGetter.getLcdBrightness();
                         if (mLcdBrightness != temp) {
+                            mTempTime = System.currentTimeMillis();
                             mLcdBrightness = temp;
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    Log.i(TAG, mLcdBrightness+"");
                                     mBrightnessTextView.setText(getString(R.string.brightness, mLcdBrightness));
                                 }
                             });
+                        } else {
+                            if (mIsCoverLSensor) {
+                                if ((System.currentTimeMillis() - mTempTime) > 2000) {
+                                    Log.i(TAG, "2");
+//                                    LSensorTestRecords records = mRecords.get(mRecords.size() - 1);
+//                                    records.setRange(records.getRange() + "->" + mLcdBrightness);
+//                                    records.setTime(System.currentTimeMillis() - records.getTime());
+//                                    Log.i(TAG,
+//                                            "次数: " + mRecords.get(mRecords.size() - 1).getNo() + "\n"
+//                                                    + "测试项: " + mRecords.get(mRecords.size() - 1).getTestProject() + "\n"
+//                                                    + "光照强度: " + mRecords.get(mRecords.size() - 1).getLux() + "\n"
+//                                                    + "范围: " + mRecords.get(mRecords.size() - 1).getRange() + "\n"
+//                                                    + "时间: " + mRecords.get(mRecords.size() - 1).getTime() + "\n"
+//                                    );
+                                    mIsCoverLSensor = false;
+                                }
+                            }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -153,19 +195,19 @@ public class LSensorTestActivity extends AppCompatActivity {
 
     private void startTest() {
         mBrightnessTextView.setVisibility(View.VISIBLE);
-        isListening = true;
+        mIsStart = true;
         listenLcdBrightness();
     }
 
     private void stopTest() {
         mBrightnessTextView.setVisibility(View.INVISIBLE);
-        isListening = false;
+        mIsStart = false;
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (isListening) {
+        if (mIsStart) {
             stopTest();
         }
     }
